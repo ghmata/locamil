@@ -4,7 +4,7 @@ Aplicação Flask para gestão de locadora de veículos.
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
 from datetime import datetime, date, timedelta
-from models import db, Carro, Cliente, Locacao
+from models import db, Carro, Cliente, Locacao, Gasto
 import os
 import csv
 import io
@@ -36,41 +36,129 @@ db.init_app(app)
 
 def seed_database():
     """
-    Popula o banco de dados com a frota inicial do cliente.
+    Popula o banco de dados com frota realista e gastos de exemplo.
     Executado automaticamente na primeira inicialização.
     """
     # Verificar se já existem carros cadastrados
     if Carro.query.count() > 0:
         return
     
-    # 1 HB20 - Diária R$ 120,00
-    hb20 = Carro(
-        modelo='HB20',
-        placa='HB-001',
-        cor='Branco',
-        valor_diaria=120.00
-    )
-    db.session.add(hb20)
-    
-    # 4 Celtas - Diária R$ 90,00 cada
-    celtas = [
-        {'placa': 'CEL-100', 'cor': 'Prata'},
-        {'placa': 'CEL-200', 'cor': 'Branco'},
-        {'placa': 'CEL-300', 'cor': 'Preto'},
-        {'placa': 'CEL-400', 'cor': 'Prata'}
+    # ========== CATEGORIA: ECONÔMICO ==========
+    frota_economico = [
+        {'modelo': 'Renault Kwid', 'placa': 'KWD-1010', 'cor': 'Branco', 'diaria': 80.00, 'km': 45000},
+        {'modelo': 'Fiat Mobi', 'placa': 'MOB-2020', 'cor': 'Prata', 'diaria': 75.00, 'km': 38000},
     ]
     
-    for celta in celtas:
+    for carro_data in frota_economico:
         carro = Carro(
-            modelo='Celta',
-            placa=celta['placa'],
-            cor=celta['cor'],
-            valor_diaria=90.00
+            modelo=carro_data['modelo'],
+            placa=carro_data['placa'],
+            cor=carro_data['cor'],
+            categoria='Econômico',
+            quilometragem=carro_data['km'],
+            valor_diaria=carro_data['diaria']
+        )
+        db.session.add(carro)
+    
+    # ========== CATEGORIA: CONFORTO ==========
+    frota_conforto = [
+        {'modelo': 'Hyundai HB20', 'placa': 'HB-3030', 'cor': 'Branco', 'diaria': 120.00, 'km': 52000},
+        {'modelo': 'Chevrolet Onix', 'placa': 'ONX-4040', 'cor': 'Preto', 'diaria': 115.00, 'km': 48000},
+        {'modelo': 'VW Polo', 'placa': 'POL-5050', 'cor': 'Prata', 'diaria': 130.00, 'km': 35000},
+    ]
+    
+    for carro_data in frota_conforto:
+        carro = Carro(
+            modelo=carro_data['modelo'],
+            placa=carro_data['placa'],
+            cor=carro_data['cor'],
+            categoria='Conforto',
+            quilometragem=carro_data['km'],
+            valor_diaria=carro_data['diaria']
+        )
+        db.session.add(carro)
+    
+    # ========== CATEGORIA: SUV ==========
+    frota_suv = [
+        {'modelo': 'VW T-Cross', 'placa': 'TCR-6060', 'cor': 'Cinza', 'diaria': 180.00, 'km': 28000},
+        {'modelo': 'Chevrolet Tracker', 'placa': 'TRK-7070', 'cor': 'Branco', 'diaria': 175.00, 'km': 31000},
+    ]
+    
+    for carro_data in frota_suv:
+        carro = Carro(
+            modelo=carro_data['modelo'],
+            placa=carro_data['placa'],
+            cor=carro_data['cor'],
+            categoria='SUV',
+            quilometragem=carro_data['km'],
+            valor_diaria=carro_data['diaria']
+        )
+        db.session.add(carro)
+    
+    # ========== CATEGORIA: PREMIUM ==========
+    frota_premium = [
+        {'modelo': 'BMW 320i', 'placa': 'BMW-8080', 'cor': 'Preto', 'diaria': 350.00, 'km': 18000},
+        {'modelo': 'Mercedes C180', 'placa': 'MER-9090', 'cor': 'Prata', 'diaria': 380.00, 'km': 15000},
+    ]
+    
+    for carro_data in frota_premium:
+        carro = Carro(
+            modelo=carro_data['modelo'],
+            placa=carro_data['placa'],
+            cor=carro_data['cor'],
+            categoria='Premium',
+            quilometragem=carro_data['km'],
+            valor_diaria=carro_data['diaria']
         )
         db.session.add(carro)
     
     db.session.commit()
-    print("✅ Frota inicial cadastrada com sucesso!")
+    
+    # ========== ADICIONAR GASTOS DE EXEMPLO (últimos 6 meses) ==========
+    carros = Carro.query.all()
+    hoje = date.today()
+    
+    # Gastos distribuídos nos últimos 6 meses
+    gastos_exemplo = [
+        # Mês 1 (6 meses atrás)
+        {'carro_idx': 0, 'tipo': 'Manutenção', 'descricao': 'Troca de óleo e filtros', 'valor': 280.00, 'dias_atras': 180},
+        {'carro_idx': 2, 'tipo': 'Seguro', 'descricao': 'Seguro anual', 'valor': 1200.00, 'dias_atras': 175},
+        
+        # Mês 2 (5 meses atrás)
+        {'carro_idx': 1, 'tipo': 'Lavagem', 'descricao': 'Lavagem completa', 'valor': 80.00, 'dias_atras': 150},
+        {'carro_idx': 5, 'tipo': 'Manutenção', 'descricao': 'Alinhamento e balanceamento', 'valor': 150.00, 'dias_atras': 145},
+        
+        # Mês 3 (4 meses atrás)
+        {'carro_idx': 3, 'tipo': 'Manutenção', 'descricao': 'Revisão dos 50.000 km', 'valor': 650.00, 'dias_atras': 120},
+        {'carro_idx': 7, 'tipo': 'Seguro', 'descricao': 'Seguro premium anual', 'valor': 2800.00, 'dias_atras': 115},
+        
+        # Mês 4 (3 meses atrás)
+        {'carro_idx': 4, 'tipo': 'Lavagem', 'descricao': 'Lavagem e polimento', 'valor': 120.00, 'dias_atras': 90},
+        {'carro_idx': 6, 'tipo': 'Manutenção', 'descricao': 'Troca de pneus', 'valor': 1400.00, 'dias_atras': 85},
+        
+        # Mês 5 (2 meses atrás)
+        {'carro_idx': 0, 'tipo': 'Lavagem', 'descricao': 'Lavagem simples', 'valor': 50.00, 'dias_atras': 60},
+        {'carro_idx': 8, 'tipo': 'Manutenção', 'descricao': 'Troca de óleo sintético', 'valor': 450.00, 'dias_atras': 55},
+        
+        # Mês 6 (mês passado)
+        {'carro_idx': 2, 'tipo': 'Lavagem', 'descricao': 'Lavagem completa', 'valor': 80.00, 'dias_atras': 30},
+        {'carro_idx': 5, 'tipo': 'Manutenção', 'descricao': 'Troca de pastilhas de freio', 'valor': 380.00, 'dias_atras': 25},
+        {'carro_idx': 1, 'tipo': 'IPVA', 'descricao': 'IPVA 2025', 'valor': 520.00, 'dias_atras': 20},
+    ]
+    
+    for gasto_data in gastos_exemplo:
+        if gasto_data['carro_idx'] < len(carros):
+            gasto = Gasto(
+                carro_id=carros[gasto_data['carro_idx']].id,
+                tipo=gasto_data['tipo'],
+                descricao=gasto_data['descricao'],
+                valor=gasto_data['valor'],
+                data_gasto=hoje - timedelta(days=gasto_data['dias_atras'])
+            )
+            db.session.add(gasto)
+    
+    db.session.commit()
+    print("✅ Frota Premium e gastos cadastrados com sucesso!")
 
 
 def verificar_disponibilidade(carro_id, data_retirada, data_devolucao, locacao_id=None):
@@ -86,6 +174,11 @@ def verificar_disponibilidade(carro_id, data_retirada, data_devolucao, locacao_i
     Returns:
         (bool, str): (disponivel, mensagem_erro)
     """
+    # Verificar se o carro está em manutenção
+    carro = Carro.query.get(carro_id)
+    if carro and carro.em_manutencao:
+        return False, f"O carro {carro.modelo} - {carro.placa} está em manutenção e não pode ser alugado."
+    
     # Validar datas
     if data_devolucao < data_retirada:
         return False, "A data de devolução não pode ser anterior à data de retirada."
@@ -117,7 +210,6 @@ def verificar_disponibilidade(carro_id, data_retirada, data_devolucao, locacao_i
     ).first()
     
     if locacoes_conflito:
-        carro = Carro.query.get(carro_id)
         return False, f"O carro {carro.modelo} - {carro.placa} já está alugado neste período."
     
     return True, ""
@@ -217,14 +309,14 @@ def get_status_carro_hoje(carro_id):
 
 @app.route('/')
 def index():
-    """Dashboard principal com visão geral da frota."""
+    """Dashboard principal com KPIs financeiros e gráficos interativos."""
     # Garantir que o banco está inicializado
     with app.app_context():
         if Carro.query.count() == 0:
             seed_database()
     
     # Buscar todos os carros
-    carros = Carro.query.filter_by(ativo=True).order_by(Carro.modelo, Carro.placa).all()
+    carros = Carro.query.filter_by(ativo=True).order_by(Carro.categoria, Carro.modelo).all()
     
     # Status de cada carro hoje
     status_carros = []
@@ -253,11 +345,70 @@ def index():
         Locacao.data_retirada <= proxima_semana
     ).order_by(Locacao.data_retirada).limit(10).all()
     
+    # ========== DADOS FINANCEIROS ==========
+    
+    # Calcular faturamento dos últimos 6 meses (para gráfico)
+    faturamento_mensal = []
+    labels_meses = []
+    
+    for i in range(5, -1, -1):  # 6 meses (do mais antigo ao mais recente)
+        mes_ref = hoje - timedelta(days=30 * i)
+        inicio_mes = mes_ref.replace(day=1)
+        
+        # Calcular fim do mês
+        if mes_ref.month == 12:
+            fim_mes = mes_ref.replace(day=31)
+        else:
+            proximo_mes = mes_ref.replace(month=mes_ref.month + 1, day=1)
+            fim_mes = proximo_mes - timedelta(days=1)
+        
+        # Somar locações finalizadas no mês
+        locacoes_mes = Locacao.query.filter(
+            Locacao.status.in_(['ativa', 'finalizada']),
+            Locacao.data_retirada >= inicio_mes,
+            Locacao.data_retirada <= fim_mes
+        ).all()
+        
+        faturamento = sum(loc.valor_total for loc in locacoes_mes)
+        faturamento_mensal.append(round(faturamento, 2))
+        
+        # Nome do mês em português
+        meses_pt = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+        labels_meses.append(meses_pt[mes_ref.month - 1])
+    
+    # Faturamento total (últimos 6 meses)
+    faturamento_total = sum(faturamento_mensal)
+    
+    # Despesas totais (últimos 6 meses)
+    inicio_periodo = hoje - timedelta(days=180)
+    gastos_periodo = Gasto.query.filter(Gasto.data_gasto >= inicio_periodo).all()
+    despesas_total = sum(gasto.valor for gasto in gastos_periodo)
+    
+    # Lucro líquido
+    lucro_liquido = faturamento_total - despesas_total
+    
+    # ========== STATUS DA FROTA (para gráfico de rosca) ==========
+    total_carros = len(carros)
+    carros_alugados = sum(1 for item in status_carros if item['status'] == 'alugado')
+    carros_disponiveis = sum(1 for item in status_carros if item['status'] == 'disponivel')
+    carros_manutencao = Carro.query.filter_by(ativo=True, em_manutencao=True).count()
+    
     return render_template(
         'dashboard.html',
         status_carros=status_carros,
         proximas_devolucoes=proximas_devolucoes,
-        proximas_retiradas=proximas_retiradas
+        proximas_retiradas=proximas_retiradas,
+        # KPIs Financeiros
+        faturamento_total=faturamento_total,
+        despesas_total=despesas_total,
+        lucro_liquido=lucro_liquido,
+        # Dados para gráficos
+        faturamento_mensal=faturamento_mensal,
+        labels_meses=labels_meses,
+        carros_alugados=carros_alugados,
+        carros_disponiveis=carros_disponiveis,
+        carros_manutencao=carros_manutencao,
+        total_carros=total_carros
     )
 
 

@@ -1,5 +1,5 @@
 """
-Modelos do banco de dados para o sistema de locadora de veículos.
+Modelos do banco de dados para o Locamil Pro - SaaS de Gestão de Frota Premium.
 """
 
 from flask_sqlalchemy import SQLAlchemy
@@ -16,12 +16,16 @@ class Carro(db.Model):
     modelo = db.Column(db.String(50), nullable=False)
     placa = db.Column(db.String(10), unique=True, nullable=False)
     cor = db.Column(db.String(20), nullable=True)
+    categoria = db.Column(db.String(30), nullable=False, default='Econômico')  # Econômico, Conforto, SUV, Premium
+    quilometragem = db.Column(db.Integer, default=0)
     valor_diaria = db.Column(db.Float, nullable=False)
     ativo = db.Column(db.Boolean, default=True)
+    em_manutencao = db.Column(db.Boolean, default=False)  # Carros em manutenção não podem ser alugados
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relacionamento com locações
+    # Relacionamentos
     locacoes = db.relationship('Locacao', backref='carro', lazy=True, cascade='all, delete-orphan')
+    gastos = db.relationship('Gasto', backref='carro', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Carro {self.modelo} - {self.placa}>'
@@ -33,8 +37,11 @@ class Carro(db.Model):
             'modelo': self.modelo,
             'placa': self.placa,
             'cor': self.cor,
+            'categoria': self.categoria,
+            'quilometragem': self.quilometragem,
             'valor_diaria': self.valor_diaria,
-            'ativo': self.ativo
+            'ativo': self.ativo,
+            'em_manutencao': self.em_manutencao
         }
 
 
@@ -99,3 +106,30 @@ class Locacao(db.Model):
             return (self.data_devolucao - self.data_retirada).days + 1
         return 0
 
+
+class Gasto(db.Model):
+    """Modelo para representar gastos operacionais com veículos."""
+    __tablename__ = 'gastos'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    carro_id = db.Column(db.Integer, db.ForeignKey('carros.id'), nullable=False)
+    tipo = db.Column(db.String(30), nullable=False)  # Manutenção, Seguro, Lavagem, Combustível, IPVA, Outros
+    descricao = db.Column(db.String(200), nullable=True)
+    valor = db.Column(db.Float, nullable=False)
+    data_gasto = db.Column(db.Date, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<Gasto {self.tipo} - R$ {self.valor}>'
+    
+    def to_dict(self):
+        """Converte o objeto para dicionário."""
+        return {
+            'id': self.id,
+            'carro': self.carro.modelo if self.carro else None,
+            'placa': self.carro.placa if self.carro else None,
+            'tipo': self.tipo,
+            'descricao': self.descricao,
+            'valor': self.valor,
+            'data_gasto': self.data_gasto.strftime('%d/%m/%Y') if self.data_gasto else None
+        }

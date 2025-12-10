@@ -1,0 +1,949 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Locamil Pro</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========== VARIÁVEIS DARK MODE PREMIUM ========== */
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-card: #151932;
+            --bg-card-hover: #1a1f3a;
+            --accent-purple: #a855f7;
+            --accent-purple-dark: #7c3aed;
+            --accent-green: #10b981;
+            --accent-green-dark: #059669;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border-color: rgba(168, 85, 247, 0.2);
+            --shadow-glow: 0 0 20px rgba(168, 85, 247, 0.15);
+        }
+        
+        /* ========== RESET & BASE ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* ========== SIDEBAR LATERAL FIXA ========== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: rgba(21, 25, 50, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-brand {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-brand h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+        
+        .sidebar-brand p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin: 0.25rem 0 0;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            color: var(--text-primary);
+            background: rgba(168, 85, 247, 0.1);
+        }
+        
+        .sidebar-menu a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(180deg, var(--accent-purple) 0%, var(--accent-green) 100%);
+        }
+        
+        .sidebar-menu a i {
+            font-size: 1.25rem;
+            margin-right: 1rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        /* ========== GLASSMORPHISM CARDS ========== */
+        .glass-card {
+            background: rgba(21, 25, 50, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-glow);
+            border-color: var(--accent-purple);
+        }
+        
+        .glass-card-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .glass-card-header i {
+            color: var(--accent-purple);
+        }
+        
+        /* ========== KPI CARDS ========== */
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .kpi-card:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+        }
+        
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .kpi-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* ========== BADGES & STATUS ========== */
+        .badge-custom {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .badge-disponivel {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+        
+        .badge-alugado {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+        
+        .badge-manutencao {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid #fbbf24;
+        }
+        
+        /* ========== BUTTONS ========== */
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple-dark) 100%);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+            background: linear-gradient(135deg, var(--accent-purple-dark) 0%, var(--accent-purple) 100%);
+        }
+        
+        .btn-success-custom {
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-dark) 100%);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-success-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* ========== ALERTS ========== */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+        
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+        
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            
+            .sidebar.active {
+                width: 280px;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .mobile-menu-toggle {
+                display: block !important;
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                z-index: 1001;
+                background: var(--accent-purple);
+                border: none;
+                padding: 0.75rem;
+                border-radius: 12px;
+                color: white;
+                font-size: 1.5rem;
+            }
+        }
+        
+        .mobile-menu-toggle {
+            display: none;
+        }
+        
+        /* ========== SCROLLBAR ========== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-purple);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple-dark);
+        }
+    </style>
+    
+    
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <h2><i class="bi bi-car-front-fill"></i> Locamil Pro</h2>
+            <p>Gestão de Frota Premium</p>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/" class="active">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/nova_locacao" class="">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Nova Locação</span>
+                </a>
+            </li>
+            <li>
+                <a href="/historico" class="">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Histórico</span>
+                </a>
+            </li>
+            <li>
+                <a href="/exportar" class="">
+                    <i class="bi bi-download"></i>
+                    <span>Exportar Dados</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Flash Messages -->
+        
+            
+        
+        
+        <!-- Page Content -->
+        
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">
+            <i class="bi bi-speedometer2" style="color: var(--accent-purple);"></i> Dashboard
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 1rem;">Visão geral da frota e performance financeira</p>
+    </div>
+</div>
+
+<!-- KPIs Financeiros -->
+<div class="row mb-4">
+    <div class="col-12 col-md-4 mb-3">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="color: var(--accent-green);">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="kpi-label">Faturamento (6 meses)</div>
+            <div class="kpi-value" style="color: var(--accent-green);">
+                R$ 0.00
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4 mb-3">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="color: #ef4444;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="kpi-label">Despesas (6 meses)</div>
+            <div class="kpi-value" style="color: #ef4444;">
+                R$ 8160.00
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4 mb-3">
+        <div class="kpi-card">
+            <div class="kpi-icon"
+                style="color: #ef4444;">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div class="kpi-label">Lucro Líquido</div>
+            <div class="kpi-value"
+                style="color: #ef4444;">
+                R$ -8160.00
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row mb-4">
+    <!-- Gráfico de Faturamento -->
+    <div class="col-12 col-lg-8 mb-4">
+        <div class="glass-card">
+            <div class="glass-card-header">
+                <i class="bi bi-graph-up"></i>
+                Faturamento Mensal (Últimos 6 Meses)
+            </div>
+            <canvas id="faturamentoChart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Gráfico de Status da Frota -->
+    <div class="col-12 col-lg-4 mb-4">
+        <div class="glass-card">
+            <div class="glass-card-header">
+                <i class="bi bi-pie-chart-fill"></i>
+                Status da Frota
+            </div>
+            <canvas id="statusFrotaChart" style="max-height: 300px;"></canvas>
+
+            <!-- Legenda Manual -->
+            <div class="mt-3" style="font-size: 0.875rem;">
+                <div class="d-flex justify-content-between mb-2">
+                    <span><i class="bi bi-circle-fill" style="color: var(--accent-green);"></i> Disponível</span>
+                    <strong>9</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span><i class="bi bi-circle-fill" style="color: #ef4444;"></i> Alugado</span>
+                    <strong>0</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span><i class="bi bi-circle-fill" style="color: #fbbf24;"></i> Manutenção</span>
+                    <strong>0</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status dos Carros Hoje -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <div class="glass-card-header">
+                <i class="bi bi-car-front-fill"></i>
+                Status da Frota - Hoje
+            </div>
+
+            <div class="row g-3">
+                
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="glass-card"
+                        style="margin-bottom: 0; border-color: var(--accent-green);">
+                        <h5 style="font-weight: 700; margin-bottom: 0.5rem;">
+                            Chevrolet Onix
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">(ONX-4040)</small>
+                        </h5>
+
+                        <div class="mb-2">
+                            
+                            <span class="badge-custom badge-disponivel">
+                                <i class="bi bi-check-circle-fill"></i> Disponível
+                            </span>
+                            
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            <div class="mb-1">
+                                <strong>Categoria:</strong> Conforto
+                            </div>
+                            <div class="mb-1">
+                                <strong>Diária:</strong> R$ 115.00
+                            </div>
+                            <div class="mb-1">
+                                <strong>KM:</strong> 48.000
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="glass-card"
+                        style="margin-bottom: 0; border-color: var(--accent-green);">
+                        <h5 style="font-weight: 700; margin-bottom: 0.5rem;">
+                            Hyundai HB20
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">(HB-3030)</small>
+                        </h5>
+
+                        <div class="mb-2">
+                            
+                            <span class="badge-custom badge-disponivel">
+                                <i class="bi bi-check-circle-fill"></i> Disponível
+                            </span>
+                            
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            <div class="mb-1">
+                                <strong>Categoria:</strong> Conforto
+                            </div>
+                            <div class="mb-1">
+                                <strong>Diária:</strong> R$ 120.00
+                            </div>
+                            <div class="mb-1">
+                                <strong>KM:</strong> 52.000
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="glass-card"
+                        style="margin-bottom: 0; border-color: var(--accent-green);">
+                        <h5 style="font-weight: 700; margin-bottom: 0.5rem;">
+                            VW Polo
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">(POL-5050)</small>
+                        </h5>
+
+                        <div class="mb-2">
+                            
+                            <span class="badge-custom badge-disponivel">
+                                <i class="bi bi-check-circle-fill"></i> Disponível
+                            </span>
+                            
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            <div class="mb-1">
+                                <strong>Categoria:</strong> Conforto
+                            </div>
+                            <div class="mb-1">
+                                <strong>Diária:</strong> R$ 130.00
+                            </div>
+                            <div class="mb-1">
+                                <strong>KM:</strong> 35.000
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="glass-card"
+                        style="margin-bottom: 0; border-color: var(--accent-green);">
+                        <h5 style="font-weight: 700; margin-bottom: 0.5rem;">
+                            Fiat Mobi
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">(MOB-2020)</small>
+                        </h5>
+
+                        <div class="mb-2">
+                            
+                            <span class="badge-custom badge-disponivel">
+                                <i class="bi bi-check-circle-fill"></i> Disponível
+                            </span>
+                            
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            <div class="mb-1">
+                                <strong>Categoria:</strong> Econômico
+                            </div>
+                            <div class="mb-1">
+                                <strong>Diária:</strong> R$ 75.00
+                            </div>
+                            <div class="mb-1">
+                                <strong>KM:</strong> 38.000
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="glass-card"
+                        style="margin-bottom: 0; border-color: var(--accent-green);">
+                        <h5 style="font-weight: 700; margin-bottom: 0.5rem;">
+                            Renault Kwid
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">(KWD-1010)</small>
+                        </h5>
+
+                        <div class="mb-2">
+                            
+                            <span class="badge-custom badge-disponivel">
+                                <i class="bi bi-check-circle-fill"></i> Disponível
+                            </span>
+                            
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            <div class="mb-1">
+                                <strong>Categoria:</strong> Econômico
+                            </div>
+                            <div class="mb-1">
+                                <strong>Diária:</strong> R$ 80.00
+                            </div>
+                            <div class="mb-1">
+                                <strong>KM:</strong> 45.000
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="glass-card"
+                        style="margin-bottom: 0; border-color: var(--accent-green);">
+                        <h5 style="font-weight: 700; margin-bottom: 0.5rem;">
+                            BMW 320i
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">(BMW-8080)</small>
+                        </h5>
+
+                        <div class="mb-2">
+                            
+                            <span class="badge-custom badge-disponivel">
+                                <i class="bi bi-check-circle-fill"></i> Disponível
+                            </span>
+                            
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            <div class="mb-1">
+                                <strong>Categoria:</strong> Premium
+                            </div>
+                            <div class="mb-1">
+                                <strong>Diária:</strong> R$ 350.00
+                            </div>
+                            <div class="mb-1">
+                                <strong>KM:</strong> 18.000
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="glass-card"
+                        style="margin-bottom: 0; border-color: var(--accent-green);">
+                        <h5 style="font-weight: 700; margin-bottom: 0.5rem;">
+                            Mercedes C180
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">(MER-9090)</small>
+                        </h5>
+
+                        <div class="mb-2">
+                            
+                            <span class="badge-custom badge-disponivel">
+                                <i class="bi bi-check-circle-fill"></i> Disponível
+                            </span>
+                            
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            <div class="mb-1">
+                                <strong>Categoria:</strong> Premium
+                            </div>
+                            <div class="mb-1">
+                                <strong>Diária:</strong> R$ 380.00
+                            </div>
+                            <div class="mb-1">
+                                <strong>KM:</strong> 15.000
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="glass-card"
+                        style="margin-bottom: 0; border-color: var(--accent-green);">
+                        <h5 style="font-weight: 700; margin-bottom: 0.5rem;">
+                            Chevrolet Tracker
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">(TRK-7070)</small>
+                        </h5>
+
+                        <div class="mb-2">
+                            
+                            <span class="badge-custom badge-disponivel">
+                                <i class="bi bi-check-circle-fill"></i> Disponível
+                            </span>
+                            
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            <div class="mb-1">
+                                <strong>Categoria:</strong> SUV
+                            </div>
+                            <div class="mb-1">
+                                <strong>Diária:</strong> R$ 175.00
+                            </div>
+                            <div class="mb-1">
+                                <strong>KM:</strong> 31.000
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="glass-card"
+                        style="margin-bottom: 0; border-color: var(--accent-green);">
+                        <h5 style="font-weight: 700; margin-bottom: 0.5rem;">
+                            VW T-Cross
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">(TCR-6060)</small>
+                        </h5>
+
+                        <div class="mb-2">
+                            
+                            <span class="badge-custom badge-disponivel">
+                                <i class="bi bi-check-circle-fill"></i> Disponível
+                            </span>
+                            
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                            <div class="mb-1">
+                                <strong>Categoria:</strong> SUV
+                            </div>
+                            <div class="mb-1">
+                                <strong>Diária:</strong> R$ 180.00
+                            </div>
+                            <div class="mb-1">
+                                <strong>KM:</strong> 28.000
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Próximas Devoluções e Retiradas -->
+<div class="row">
+    <!-- Próximas Devoluções -->
+    <div class="col-12 col-lg-6 mb-4">
+        <div class="glass-card">
+            <div class="glass-card-header">
+                <i class="bi bi-arrow-down-circle-fill" style="color: var(--accent-green);"></i>
+                Próximas Devoluções (7 dias)
+            </div>
+
+            
+            <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0; margin: 0;">
+                <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                Nenhuma devolução prevista
+            </p>
+            
+        </div>
+    </div>
+
+    <!-- Próximas Retiradas -->
+    <div class="col-12 col-lg-6 mb-4">
+        <div class="glass-card">
+            <div class="glass-card-header">
+                <i class="bi bi-arrow-up-circle-fill" style="color: var(--accent-purple);"></i>
+                Próximas Retiradas (7 dias)
+            </div>
+
+            
+            <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0; margin: 0;">
+                <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                Nenhuma retirada prevista
+            </p>
+            
+        </div>
+    </div>
+</div>
+
+<!-- Botão de Ação Rápida -->
+<div class="row">
+    <div class="col-12 text-center">
+        <a href="/nova_locacao" class="btn-primary-custom"
+            style="display: inline-block; text-decoration: none; font-size: 1.125rem;">
+            <i class="bi bi-plus-circle-fill"></i> Nova Locação
+        </a>
+    </div>
+</div>
+
+    </main>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toggle sidebar em mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+    </script>
+    
+    
+<script>
+    // ========== GRÁFICO DE FATURAMENTO MENSAL ==========
+    const ctxFaturamento = document.getElementById('faturamentoChart').getContext('2d');
+    const faturamentoChart = new Chart(ctxFaturamento, {
+        type: 'line',
+        data: {
+            labels: ["Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+    datasets: [{
+        label: 'Faturamento (R$)',
+        data: [0, 0, 0, 0, 0, 0],
+        borderColor: '#a855f7',
+        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#a855f7',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7
+            }]
+        },
+    options: {
+        responsive: true,
+            maintainAspectRatio: true,
+                plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(21, 25, 50, 0.9)',
+                    titleColor: '#f9fafb',
+                        bodyColor: '#f9fafb',
+                            borderColor: '#a855f7',
+                                borderWidth: 1,
+                                    padding: 12,
+                                        displayColors: false,
+                                            callbacks: {
+                    label: function(context) {
+                        return 'R$ ' + context.parsed.y.toFixed(2);
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                    ticks: {
+                    color: '#9ca3af',
+                        callback: function(value) {
+                            return 'R$ ' + value.toFixed(0);
+                        }
+                },
+                grid: {
+                    color: 'rgba(168, 85, 247, 0.1)'
+                }
+            },
+            x: {
+                ticks: {
+                    color: '#9ca3af'
+                },
+                grid: {
+                    color: 'rgba(168, 85, 247, 0.1)'
+                }
+            }
+        }
+    }
+    });
+
+    // ========== GRÁFICO DE STATUS DA FROTA ==========
+    const ctxStatus = document.getElementById('statusFrotaChart').getContext('2d');
+    const statusFrotaChart = new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+            labels: ['Disponível', 'Alugado', 'Manutenção'],
+            datasets: [{
+                data: [9, 0, 0],
+    backgroundColor: [
+        '#10b981',
+        '#ef4444',
+        '#fbbf24'
+    ],
+        borderColor: '#151932',
+            borderWidth: 3,
+                hoverOffset: 10
+            }]
+        },
+    options: {
+        responsive: true,
+            maintainAspectRatio: true,
+                plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(21, 25, 50, 0.9)',
+                    titleColor: '#f9fafb',
+                        bodyColor: '#f9fafb',
+                            borderColor: '#a855f7',
+                                borderWidth: 1,
+                                    padding: 12
+            }
+        }
+    }
+    });
+</script>
+
+</body>
+</html>
