@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico - Locadora{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 fw-bold">
+            <i class="bi bi-clock-history"></i> Histórico de Locações
+        </h1>
+        <p class="text-muted">Todas as locações cadastradas no sistema</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-list-ul"></i> Lista de Locações
+            </div>
+            <div class="card-body">
+                {% if locacoes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Carro</th>
+                                <th>Cliente</th>
+                                <th>Retirada</th>
+                                <th>Devolução</th>
+                                <th>Valor Total</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for locacao in locacoes %}
+                            <tr>
+                                <td><strong>#{{ locacao.id }}</strong></td>
+                                <td>
+                                    <strong>{{ locacao.carro.modelo }}</strong><br>
+                                    <small class="text-muted">{{ locacao.carro.placa }}</small>
+                                </td>
+                                <td>
+                                    {{ locacao.cliente.nome }}
+                                    {% if locacao.cliente.whatsapp %}
+                                    <br><small class="text-muted">
+                                        <i class="bi bi-whatsapp"></i> {{ locacao.cliente.whatsapp }}
+                                    </small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        {{ locacao.data_retirada.strftime('%d/%m/%Y') }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{ locacao.data_devolucao.strftime('%d/%m/%Y') }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-success">
+                                        R$ {{ "%.2f"|format(locacao.valor_total) }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    {% if locacao.status == 'ativa' %}
+                                        <span class="badge bg-success">Ativa</span>
+                                    {% elif locacao.status == 'finalizada' %}
+                                        <span class="badge bg-secondary">Finalizada</span>
+                                    {% elif locacao.status == 'cancelada' %}
+                                        <span class="badge bg-danger">Cancelada</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if locacao.status == 'ativa' %}
+                                    <div class="d-flex flex-column gap-1">
+                                        {% if locacao.cliente.whatsapp %}
+                                        <a href="{{ url_for('enviar_comprovante_whatsapp', locacao_id=locacao.id) }}" 
+                                           class="btn btn-success btn-sm" 
+                                           target="_blank"
+                                           title="Enviar comprovante via WhatsApp">
+                                            <i class="bi bi-whatsapp"></i> Enviar Comprovante
+                                        </a>
+                                        {% endif %}
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <form method="POST" action="{{ url_for('finalizar_locacao', locacao_id=locacao.id) }}" class="d-inline">
+                                                <button type="submit" class="btn btn-success" 
+                                                        onclick="return confirm('Deseja finalizar esta locação?')"
+                                                        title="Finalizar locação">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('cancelar_locacao', locacao_id=locacao.id) }}" class="d-inline">
+                                                <button type="submit" class="btn btn-danger" 
+                                                        onclick="return confirm('Deseja cancelar esta locação?')"
+                                                        title="Cancelar locação">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 48px; color: #ccc;"></i>
+                    <p class="text-muted mt-3">Nenhuma locação cadastrada ainda.</p>
+                    <a href="{{ url_for('nova_locacao') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Criar Primeira Locação
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estatísticas -->
+{% if locacoes %}
+<div class="row mt-4">
+    <div class="col-12 col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total de Locações</h5>
+                <h2 class="text-primary">{{ locacoes|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Locações Ativas</h5>
+                <h2 class="text-success">
+                    {% set ativas = locacoes|selectattr('status', 'equalto', 'ativa')|list %}
+                    {{ ativas|length }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Valor Total</h5>
+                <h2 class="text-success">
+                    {% set total = locacoes|sum(attribute='valor_total') %}
+                    R$ {{ "%.2f"|format(total) }}
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

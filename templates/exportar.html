@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Exportar Dados - Locadora{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 fw-bold">
+            <i class="bi bi-download"></i> Exportar Dados
+        </h1>
+        <p class="text-muted">Exporte os dados do sistema para análise em diferentes formatos</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Exportar SQL -->
+    <div class="col-12 col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-filetype-sql"></i> Exportar SQL
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Arquivo SQL</h5>
+                <p class="card-text">
+                    Exporta todos os dados (carros, clientes e locações) em formato SQL 
+                    com comandos INSERT. Ideal para backup e migração de banco de dados.
+                </p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle text-success"></i> Comandos INSERT prontos</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Compatível com MySQL/PostgreSQL</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Backup completo</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('exportar_sql') }}" class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-download"></i> Baixar SQL
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Exportar CSV -->
+    <div class="col-12 col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-filetype-csv"></i> Exportar CSV
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Arquivo CSV</h5>
+                <p class="card-text">
+                    Exporta todas as locações em formato CSV. Perfeito para análise 
+                    em Excel, Google Sheets ou Python/Pandas.
+                </p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle text-success"></i> Compatível com Excel</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Análise de dados</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Relatórios e gráficos</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('exportar_csv') }}" class="btn btn-success btn-lg w-100">
+                    <i class="bi bi-download"></i> Baixar CSV
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Exportar JSON -->
+    <div class="col-12 col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-filetype-json"></i> Exportar JSON
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Arquivo JSON</h5>
+                <p class="card-text">
+                    Exporta todos os dados em formato JSON estruturado. Ideal para 
+                    integração com outras aplicações e análise programática.
+                </p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle text-success"></i> Formato estruturado</li>
+                    <li><i class="bi bi-check-circle text-success"></i> API e integrações</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Análise programática</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('exportar_json') }}" class="btn btn-info btn-lg w-100">
+                    <i class="bi bi-download"></i> Baixar JSON
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informações Adicionais -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <i class="bi bi-info-circle"></i> Informações sobre Exportação
+            </div>
+            <div class="card-body">
+                <h5>Dados Exportados</h5>
+                <ul>
+                    <li><strong>Carros:</strong> Todos os veículos da frota (modelo, placa, cor, valor da diária)</li>
+                    <li><strong>Clientes:</strong> Todos os clientes cadastrados (nome, WhatsApp)</li>
+                    <li><strong>Locações:</strong> Todas as locações (ativas, finalizadas e canceladas)</li>
+                </ul>
+                
+                <h5 class="mt-3">Uso dos Arquivos</h5>
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <strong>SQL:</strong> Execute os comandos INSERT em qualquer banco de dados SQL 
+                        (MySQL, PostgreSQL, SQL Server) para recriar os dados.
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <strong>CSV:</strong> Abra no Excel, Google Sheets ou importe em Python/Pandas 
+                        para análise estatística e criação de gráficos.
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <strong>JSON:</strong> Use em aplicações web, APIs ou scripts Python/JavaScript 
+                        para processamento programático dos dados.
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle"></i> 
+                    <strong>Atenção:</strong> Os arquivos exportados contêm dados sensíveis. 
+                    Mantenha-os seguros e não compartilhe publicamente.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+

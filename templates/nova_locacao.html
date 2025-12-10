@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Locação - Locadora{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 fw-bold">
+            <i class="bi bi-plus-circle"></i> Nova Locação
+        </h1>
+        <p class="text-muted">Preencha os dados para criar uma nova locação</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-file-earmark-text"></i> Dados da Locação
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('nova_locacao') }}" id="formLocacao">
+                    <!-- Dados do Cliente -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-person"></i> Dados do Cliente
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label for="nome_cliente" class="form-label">
+                                Nome do Cliente <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control form-control-lg" 
+                                id="nome_cliente" 
+                                name="nome_cliente" 
+                                required
+                                placeholder="Digite o nome completo"
+                            >
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="whatsapp" class="form-label">
+                                <i class="bi bi-whatsapp"></i> WhatsApp (opcional)
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control form-control-lg" 
+                                id="whatsapp" 
+                                name="whatsapp" 
+                                placeholder="(11) 99999-9999"
+                            >
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> O prefixo +55 será adicionado automaticamente.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Dados da Locação -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-car-front"></i> Dados da Locação
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label for="carro_id" class="form-label">
+                                Carro <span class="text-danger">*</span>
+                            </label>
+                            <select 
+                                class="form-select form-select-lg" 
+                                id="carro_id" 
+                                name="carro_id" 
+                                required
+                            >
+                                <option value="">Selecione um carro...</option>
+                                {% for carro in carros %}
+                                <option 
+                                    value="{{ carro.id }}" 
+                                    data-valor="{{ carro.valor_diaria }}"
+                                    data-modelo="{{ carro.modelo }}"
+                                >
+                                    {{ carro.modelo }} - {{ carro.placa }} 
+                                    {% if carro.cor %}({{ carro.cor }}){% endif %} 
+                                    - R$ {{ "%.2f"|format(carro.valor_diaria) }}/dia
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="data_retirada" class="form-label">
+                                    Data de Retirada <span class="text-danger">*</span>
+                                </label>
+                                <input 
+                                    type="date" 
+                                    class="form-control form-control-lg" 
+                                    id="data_retirada" 
+                                    name="data_retirada" 
+                                    required
+                                    min="{{ hoje }}"
+                                >
+                            </div>
+                            
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="data_devolucao" class="form-label">
+                                    Data de Devolução <span class="text-danger">*</span>
+                                </label>
+                                <input 
+                                    type="date" 
+                                    class="form-control form-control-lg" 
+                                    id="data_devolucao" 
+                                    name="data_devolucao" 
+                                    required
+                                    min="{{ hoje }}"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cálculo Automático -->
+                    <div class="alert alert-info" id="calculoContainer" style="display: none;">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-calculator"></i> Cálculo Estimado
+                        </h6>
+                        <p class="mb-1">
+                            <strong>Dias:</strong> <span id="diasCalculados">0</span>
+                        </p>
+                        <p class="mb-0">
+                            <strong>Valor Total:</strong> 
+                            <span class="valor-destaque" id="valorTotal">R$ 0,00</span>
+                        </p>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Confirmar Locação
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Calcular valor automaticamente ao mudar datas ou carro
+    function calcularValor() {
+        const carroId = document.getElementById('carro_id').value;
+        const dataRetirada = document.getElementById('data_retirada').value;
+        const dataDevolucao = document.getElementById('data_devolucao').value;
+        
+        if (!carroId || !dataRetirada || !dataDevolucao) {
+            document.getElementById('calculoContainer').style.display = 'none';
+            return;
+        }
+        
+        // Validar se data de devolução é maior que retirada
+        if (new Date(dataDevolucao) < new Date(dataRetirada)) {
+            document.getElementById('calculoContainer').style.display = 'none';
+            return;
+        }
+        
+        // Fazer requisição AJAX
+        fetch('{{ url_for("calcular_valor") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                carro_id: carroId,
+                data_retirada: dataRetirada,
+                data_devolucao: dataDevolucao
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.erro) {
+                document.getElementById('calculoContainer').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('diasCalculados').textContent = data.dias;
+            document.getElementById('valorTotal').textContent = 
+                'R$ ' + data.valor_total.toFixed(2).replace('.', ',');
+            document.getElementById('calculoContainer').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+        });
+    }
+    
+    // Adicionar event listeners
+    document.getElementById('carro_id').addEventListener('change', calcularValor);
+    document.getElementById('data_retirada').addEventListener('change', calcularValor);
+    document.getElementById('data_devolucao').addEventListener('change', calcularValor);
+    
+    // Validar data de devolução ao mudar
+    document.getElementById('data_retirada').addEventListener('change', function() {
+        const dataRetirada = this.value;
+        const dataDevolucao = document.getElementById('data_devolucao');
+        if (dataRetirada) {
+            dataDevolucao.min = dataRetirada;
+            if (dataDevolucao.value && dataDevolucao.value < dataRetirada) {
+                dataDevolucao.value = dataRetirada;
+            }
+        }
+    });
+</script>
+{% endblock %}
+

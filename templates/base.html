@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Locadora de Veículos{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        /* Mobile First - Botões grandes e espaçados */
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .status-badge {
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 20px;
+        }
+        
+        /* Melhor espaçamento em mobile */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .card {
+                margin-bottom: 15px;
+            }
+        }
+        
+        .valor-destaque {
+            font-size: 24px;
+            font-weight: 700;
+            color: #198754;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="bi bi-car-front"></i> Locadora
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="bi bi-house-door"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('nova_locacao') }}">
+                            <i class="bi bi-plus-circle"></i> Nova Locação
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('historico') }}">
+                            <i class="bi bi-clock-history"></i> Histórico
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('exportar') }}">
+                            <i class="bi bi-download"></i> Exportar
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Conteúdo Principal -->
+    <div class="container mt-4 mb-5">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <small class="text-muted">Sistema de Gestão de Locadora © 2025</small>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+
